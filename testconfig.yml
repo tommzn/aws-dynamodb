@@ -1,0 +1,6 @@
+aws:
+  dynamodb:
+    region: eu-central-5
+    tablename: ExchangeRateTest
+    endpoint: http://localhost:8000
+    
