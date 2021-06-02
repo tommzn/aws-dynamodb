@@ -1,7 +1,7 @@
 package dynamodb
 
 // NewItemIdentifier returns a new ItemIdentifier with passed id and object type.
-func NewItemIdentifier(id, objectType string) ItemKey {
+func NewItemIdentifier(id, objectType string) *ItemIdentifier {
 	return &ItemIdentifier{Id: id, ObjectType: objectType}
 }
 
