@@ -31,7 +31,7 @@ jobs:
       - name: Run tests
         env:
           AWS_ACCESS_KEY_ID: xxx # Dummy values to avoid NoCredentialProviders error
-          AWS_sECRET_ACCESS_KEY: xxx # Dummy values to avoid NoCredentialProviders error
+          AWS_SECRET_ACCESS_KEY: xxx # Dummy values to avoid NoCredentialProviders error
         run: go test -v  -covermode=count ./...
 
   release:
