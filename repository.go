@@ -11,7 +11,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 )
 
+// DEFAULT_AWS_REGION defines the fallback AWS region if nothing has been specified by config.
 const DEFAULT_AWS_REGION = "eu-central-1"
+
+// DEFAULT_TABLENAME defines the default DynamoDb table name.
 const DEFAULT_TABLENAME = "<DynamoDbTableNotSet>"
 
 // Add will create a new item or update an existing item in DynamoDb.
@@ -22,7 +25,7 @@ func (r *DynamoDbRepository) Add(item ItemKey) error {
 	av, err := dynamodbattribute.MarshalMap(item)
 	r.logger.Debugf("AttributeValue: %+v", av)
 	if err == nil {
-		input := &dynamodb.PutItemInput{Item: av, TableName: r.TableName}
+		input := &dynamodb.PutItemInput{Item: av, TableName: r.tableName}
 		_, err = r.dynamoDb().PutItem(input)
 	}
 	return err
@@ -90,7 +93,7 @@ func (r *DynamoDbRepository) Query(objectType string, receiver interface{}) erro
 func (r *DynamoDbRepository) dynamoDb() *dynamodb.DynamoDB {
 
 	if r.dynamoDbClient == nil {
-		sess := session.Must(session.NewSession(r.Config))
+		sess := session.Must(session.NewSession(r.config))
 		r.dynamoDbClient = dynamodb.New(sess)
 	}
 	return r.dynamoDbClient
@@ -102,7 +105,7 @@ func (r *DynamoDbRepository) newGetItemInput(item ItemKey) *dynamodb.GetItemInpu
 	dynamodbKey, _ := dynamodbattribute.MarshalMap(NewItemIdentifier(item.GetId(), item.GetObjectType()))
 	return &dynamodb.GetItemInput{
 		Key:       dynamodbKey,
-		TableName: r.TableName,
+		TableName: r.tableName,
 	}
 }
 
@@ -112,7 +115,7 @@ func (r *DynamoDbRepository) newDeleteItemInput(item ItemKey) *dynamodb.DeleteIt
 	dynamodbKey, _ := dynamodbattribute.MarshalMap(NewItemIdentifier(item.GetId(), item.GetObjectType()))
 	return &dynamodb.DeleteItemInput{
 		Key:       dynamodbKey,
-		TableName: r.TableName,
+		TableName: r.tableName,
 	}
 }
 
@@ -131,7 +134,7 @@ func (r *DynamoDbRepository) newQueryInput(objectType string) *dynamodb.QueryInp
 	return &dynamodb.QueryInput{
 		ExpressionAttributeNames:  expressionAttributeNames,
 		ExpressionAttributeValues: expressionAttributeValues,
-		TableName:                 r.TableName,
+		TableName:                 r.tableName,
 		KeyConditionExpression:    expr.KeyCondition(),
 	}
 }

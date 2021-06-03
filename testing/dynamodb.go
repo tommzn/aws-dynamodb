@@ -95,7 +95,6 @@ func listTables(region, endpoint *string) (*[]*string, error) {
 	res, err := dynamoDb.ListTables(&dynamodb.ListTablesInput{})
 	if err == nil {
 		return &res.TableNames, nil
-	} else {
-		return nil, err
 	}
+	return nil, err
 }

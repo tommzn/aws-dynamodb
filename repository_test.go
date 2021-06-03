@@ -69,7 +69,7 @@ func (suite *RepositoryTestSuite) TestCrudActions() {
 func (suite *RepositoryTestSuite) TestWithErrors() {
 
 	item := newItemForTest()
-	suite.repo.(*DynamoDbRepository).TableName = nil
+	suite.repo.(*DynamoDbRepository).tableName = nil
 	suite.NotNil(suite.repo.Get(item))
 }
 

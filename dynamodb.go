@@ -17,8 +17,8 @@ func NewRepository(conf config.Config, logger log.Logger) Repository {
 		Endpoint: conf.Get("aws.dynamodb.endpoint", nil),
 	}
 	return &DynamoDbRepository{
-		Config:    awsConfig,
-		TableName: tableName,
+		config:    awsConfig,
+		tableName: tableName,
 		logger:    logger,
 	}
 }

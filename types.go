@@ -16,10 +16,10 @@ type ItemIdentifier struct {
 type DynamoDbRepository struct {
 
 	// Config contains the AWS config to access DynamoDb.
-	Config *aws.Config
+	config *aws.Config
 
 	// TableName defines the DynamoDb table which should be used.
-	TableName *string
+	tableName *string
 
 	// Logger will write logs for errors and and other messages depending pn used log level.
 	logger log.Logger
