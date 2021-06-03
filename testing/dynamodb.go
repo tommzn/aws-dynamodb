@@ -23,20 +23,20 @@ func SetupTableForTest(tablename, region, endpoint *string) error {
 		},
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			&dynamodb.AttributeDefinition{
-				AttributeName: aws.String("Id"),
+				AttributeName: aws.String("ObjectType"),
 				AttributeType: aws.String("S"),
 			},
 			&dynamodb.AttributeDefinition{
-				AttributeName: aws.String("ObjectType"),
+				AttributeName: aws.String("Id"),
 				AttributeType: aws.String("S"),
 			}},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			&dynamodb.KeySchemaElement{
-				AttributeName: aws.String("Id"),
+				AttributeName: aws.String("ObjectType"),
 				KeyType:       aws.String("HASH"),
 			},
 			&dynamodb.KeySchemaElement{
-				AttributeName: aws.String("ObjectType"),
+				AttributeName: aws.String("Id"),
 				KeyType:       aws.String("RANGE"),
 			},
 		},

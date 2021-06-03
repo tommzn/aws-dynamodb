@@ -5,5 +5,5 @@
 [![Actions Status](https://github.com/tommzn/aws-dynamodb/actions/workflows/go.pkg.auto-ci.yml/badge.svg)](https://github.com/tommzn/aws-dynamodb/actions)
 
 # DynamoDb Wrapper
-This package provides a wrapper to dynamodb to run CRUD actions for items. It expects a table with a composed primary key of Id (Hash) and ObjectType (Range).
+This package provides a wrapper to dynamodb to run CRUD actions for items. It expects a table with a composed primary key of ObjectType (Hash) and Id (Range).
 Sub package testing will support you creating a suitable table for tests.
