@@ -10,11 +10,6 @@ import (
 // and a composed primary key with an ID as hash key and an object type as sort key.
 func SetupTableForTest(tablename, region, endpoint *string) error {
 
-	dynamoDb, err := dynamoDbClient(region, endpoint)
-	if err != nil {
-		return err
-	}
-
 	createTableInput := &dynamodb.CreateTableInput{
 		TableName: tablename,
 		ProvisionedThroughput: &dynamodb.ProvisionedThroughput{
@@ -42,59 +37,36 @@ func SetupTableForTest(tablename, region, endpoint *string) error {
 		},
 	}
 
-	_, err = dynamoDb.CreateTable(createTableInput)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err := dynamoDbClient(region, endpoint).CreateTable(createTableInput)
+	return err
 }
 
 // TearDownTableForTest will delete passed table from DynamoDb.
 // Attention: If you use wrong region and endpoint settings this may drop an undesired table!
 func TearDownTableForTest(tablename, region, endpoint *string) error {
 
-	dynamoDb, err := dynamoDbClient(region, endpoint)
-	if err != nil {
-		return err
-	}
-
 	deleteTableInput := &dynamodb.DeleteTableInput{
 		TableName: tablename,
 	}
 
-	_, err = dynamoDb.DeleteTable(deleteTableInput)
-	if err != nil {
-		return err
-	}
-	return nil
+	_, err := dynamoDbClient(region, endpoint).DeleteTable(deleteTableInput)
+	return err
+}
+
+// listTables returns all available DynamoDb tables.
+func listTables(region, endpoint *string) ([]*string, error) {
+
+	res, err := dynamoDbClient(region, endpoint).ListTables(&dynamodb.ListTablesInput{})
+	return res.TableNames, err
 }
 
 // dynamoDbClient creates a new dynamoDb client with passed config.
-func dynamoDbClient(region, endpoint *string) (*dynamodb.DynamoDB, error) {
+func dynamoDbClient(region, endpoint *string) *dynamodb.DynamoDB {
 
 	awsConfig := &aws.Config{
 		Region:   region,
 		Endpoint: endpoint,
 	}
-	sess, err := session.NewSession(awsConfig)
-	if err != nil {
-		return nil, err
-	}
-	d := dynamodb.New(sess)
-	return d, nil
-}
-
-// listTables returns all available DynamoDb tables.
-func listTables(region, endpoint *string) (*[]*string, error) {
-
-	dynamoDb, err := dynamoDbClient(region, endpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := dynamoDb.ListTables(&dynamodb.ListTablesInput{})
-	if err == nil {
-		return &res.TableNames, nil
-	}
-	return nil, err
+	sess := session.Must(session.NewSession(awsConfig))
+	return dynamodb.New(sess)
 }

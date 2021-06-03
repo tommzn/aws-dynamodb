@@ -37,11 +37,11 @@ func (suite *DynamoDbTestSuite) TestSetupAndTearDownTable() {
 func (suite *DynamoDbTestSuite) tableExists() bool {
 
 	tables, err := listTables(&suite.region, &suite.endpoint)
-	if err != nil || len(*tables) == 0 {
+	if err != nil || len(tables) == 0 {
 		return false
 	}
 
-	for _, existingTable := range *tables {
+	for _, existingTable := range tables {
 		if *existingTable == suite.tablename {
 			return true
 		}
