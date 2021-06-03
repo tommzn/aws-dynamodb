@@ -1,3 +1,4 @@
+// Package testing provides helper to create a DynamoDb table for testing and drop it afterwards.
 package testing
 
 import (
