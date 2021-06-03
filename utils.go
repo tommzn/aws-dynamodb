@@ -4,5 +4,5 @@ import "fmt"
 
 // identifierAsString returns a string represantation of an identifier.
 func identifierAsString(id ItemKey) string {
-	return fmt.Sprintf("%s:%s", id.GetId(), id.GetObjectType())
+	return fmt.Sprintf("%s:%s", id.GetObjectType(), id.GetId())
 }

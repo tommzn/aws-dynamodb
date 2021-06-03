@@ -58,4 +58,34 @@ func (suite *RepositoryTestSuite) TestCrudActions() {
 
 	suite.Nil(suite.repo.Delete(item))
 	suite.NotNil(suite.repo.Get(item))
+
+	suite.NotNil(suite.repo.Get(*item))
+
+	item.ItemIdentifier.Id = "xxx"
+	err := suite.repo.Get(item)
+	suite.NotNil(err)
+}
+
+func (suite *RepositoryTestSuite) TestWithErrors() {
+
+	item := newItemForTest()
+	suite.repo.(*DynamoDbRepository).TableName = nil
+	suite.NotNil(suite.repo.Get(item))
+}
+
+func (suite *RepositoryTestSuite) TestQueryItems() {
+
+	for i := 1; i <= 3; i++ {
+		suite.Nil(suite.repo.Add(newItemForTest()))
+	}
+
+	items := []testItem{}
+	suite.Nil(suite.repo.Query("TestItems", &items))
+	suite.Len(items, 3)
+
+	items2 := []testItem{}
+	suite.Nil(suite.repo.Query("XXX", &items2))
+	suite.Len(items2, 0)
+
+	suite.NotNil(suite.repo.Query("XXX", []testItem{}))
 }

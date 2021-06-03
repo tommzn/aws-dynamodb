@@ -27,3 +27,14 @@ type DynamoDbRepository struct {
 	// dynamoDbClient is a used to access DynamoDb apis.
 	dynamoDbClient *dynamodb.DynamoDB
 }
+
+// QueryRequest is used to query items for a partition key.
+type QueryRequest struct {
+
+	// ObjectType items should be read for.
+	ObjectType string
+
+	// Items will contain a pointer to a slice of desired items.
+	// It's used to define the type of items which should be returned.
+	Items interface{}
+}

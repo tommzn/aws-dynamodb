@@ -11,7 +11,7 @@ type ItemKey interface {
 type Repository interface {
 	Add(ItemKey) error
 	Get(ItemKey) error
-	//Query(ListItemRequest) (ListItemResponse, error)
+	Query(string, interface{}) error
 	//Scan(ListItemRequest) (ListItemResponse, error)
 	Delete(ItemKey) error
 }

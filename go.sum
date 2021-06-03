@@ -193,6 +193,8 @@ github.com/subosito/gotenv v1.2.0/go.mod h1:N0PQaV/YGNqwC0u51sEeR/aUtSLEXKX9iv69
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
 github.com/tommzn/aws-dynamodb/testing v1.0.0 h1:ZbWq88j59tFdWFeONzaM1SkpBv/w4hXAFi4VG/MQ1vI=
 github.com/tommzn/aws-dynamodb/testing v1.0.0/go.mod h1:Cq8CXGQXcekX6nCypo0BH9/w45/iTEX97WK6lCAlR2M=
+github.com/tommzn/aws-dynamodb/testing v1.0.1 h1:OiugJp6txOh652YqC3ewVST2XCpqZgGS9kGbF+q74VY=
+github.com/tommzn/aws-dynamodb/testing v1.0.1/go.mod h1:Cq8CXGQXcekX6nCypo0BH9/w45/iTEX97WK6lCAlR2M=
 github.com/tommzn/go-config v1.0.1 h1:M8kzmqdpsXv5/fmOW3eneEUArwlaGCwwE2pgKtJ72tQ=
 github.com/tommzn/go-config v1.0.1/go.mod h1:K+ta7gkX32lSS+6tIIH9ttuhr35tV4AMAzOC640aRKE=
 github.com/tommzn/go-log v1.0.0 h1:lWVKXMtYrz81TwbGpp4pOYGxCbKj982JmyiJDoIkiQM=
