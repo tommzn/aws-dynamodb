@@ -2,6 +2,8 @@
 package dynamodb
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	config "github.com/tommzn/go-config"
 	log "github.com/tommzn/go-log"
@@ -20,5 +22,6 @@ func NewRepository(conf config.Config, logger log.Logger) Repository {
 		config:    awsConfig,
 		tableName: tableName,
 		logger:    logger,
+		lockTtl:   5 * time.Minute,
 	}
 }

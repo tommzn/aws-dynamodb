@@ -4,11 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	utils "github.com/tommzn/go-utils"
 )
 
 // DEFAULT_AWS_REGION defines the fallback AWS region if nothing has been specified by config.
@@ -17,10 +20,17 @@ const DEFAULT_AWS_REGION = "eu-central-1"
 // DEFAULT_TABLENAME defines the default DynamoDb table name.
 const DEFAULT_TABLENAME = "<DynamoDbTableNotSet>"
 
+// lockObjectType is the object type used for locks.
+const lockObjectType = "OBJECTLOCK"
+
 // Add will create a new item or update an existing item in DynamoDb.
 func (r *DynamoDbRepository) Add(item ItemKey) error {
 
 	r.logger.Debug("Add Item: ", identifierAsString(item))
+
+	if item.GetObjectType() == lockObjectType {
+		return fmt.Errorf("Unsupported object type for Add: %s", item.GetObjectType())
+	}
 
 	av, err := dynamodbattribute.MarshalMap(item)
 	r.logger.Debugf("AttributeValue: %+v", av)
@@ -89,6 +99,36 @@ func (r *DynamoDbRepository) Query(objectType string, receiver interface{}) erro
 	return err
 }
 
+// Lock will try to obtain a lock passed item. Default life time of a lock is 5 min.
+func (r *DynamoDbRepository) Lock(item ItemKey) (*ItemLock, error) {
+
+	itemLock := r.newObjectLockForItem(item)
+	input := r.newPutItemInputForLock(&itemLock)
+	if _, err := r.dynamoDb().PutItem(input); err == nil {
+		return &itemLock, nil
+	} else {
+		return nil, err
+	}
+}
+
+// Renew can be used to extend life time of a lock.
+func (r *DynamoDbRepository) Renew(itemLock *ItemLock) (*ItemLock, error) {
+
+	itemLock.ExpiresAt = r.newLockExpiration()
+	input := r.newPutItemInputForRenew(itemLock)
+	if _, err := r.dynamoDb().PutItem(input); err == nil {
+		return itemLock, nil
+	} else {
+		return nil, err
+	}
+}
+
+// Unlock will remove given lock from DynamoDb.
+func (r *DynamoDbRepository) Unlock(itemLock *ItemLock) error {
+
+	return r.Delete(itemLock)
+}
+
 // dynamoDb creates a DynamoDb client. Uses a singleton pattern which creates the client only once.
 func (r *DynamoDbRepository) dynamoDb() *dynamodb.DynamoDB {
 
@@ -137,4 +177,50 @@ func (r *DynamoDbRepository) newQueryInput(objectType string) *dynamodb.QueryInp
 		TableName:                 r.tableName,
 		KeyConditionExpression:    expr.KeyCondition(),
 	}
+}
+
+// newPutItemInputForLock creates a new conditional put item input for a lock item.
+func (r *DynamoDbRepository) newPutItemInputForLock(itemLock *ItemLock) *dynamodb.PutItemInput {
+
+	dynamodbLockData, _ := dynamodbattribute.MarshalMap(itemLock)
+
+	expressionAttributeValues := make(map[string]*dynamodb.AttributeValue)
+	ttlAttribute, _ := dynamodbattribute.Marshal(itemLock.ExpiresAt)
+	expressionAttributeValues[":ExpiresAt"] = ttlAttribute
+	return &dynamodb.PutItemInput{
+		Item:                      dynamodbLockData,
+		TableName:                 r.tableName,
+		ConditionExpression:       aws.String("(attribute_not_exists(Id) AND attribute_not_exists(ObjectType)) or ExpiresAt < :ExpiresAt"),
+		ExpressionAttributeValues: expressionAttributeValues,
+	}
+}
+
+// newPutItemInputForLock creates a new conditional put item input for a lock item.
+func (r *DynamoDbRepository) newPutItemInputForRenew(itemLock *ItemLock) *dynamodb.PutItemInput {
+
+	dynamodbLockData, _ := dynamodbattribute.MarshalMap(itemLock)
+
+	expressionAttributeValues := make(map[string]*dynamodb.AttributeValue)
+	attrLockId, _ := dynamodbattribute.Marshal(itemLock.LockId)
+	expressionAttributeValues[":LockId"] = attrLockId
+	return &dynamodb.PutItemInput{
+		Item:                      dynamodbLockData,
+		TableName:                 r.tableName,
+		ConditionExpression:       aws.String("(attribute_exists(Id) AND attribute_exists(ObjectType))  AND LockId = :LockId"),
+		ExpressionAttributeValues: expressionAttributeValues,
+	}
+}
+
+// newObjectLockForItem returns a lock object.
+func (r *DynamoDbRepository) newObjectLockForItem(item ItemKey) ItemLock {
+	return ItemLock{
+		ItemIdentifier: NewItemIdentifier(identifierAsString(item), lockObjectType),
+		ExpiresAt:      r.newLockExpiration(),
+		LockId:         utils.NewId(),
+	}
+}
+
+// newLockExpiration returns the new expiration time of a lock.
+func (r *DynamoDbRepository) newLockExpiration() int64 {
+	return time.Now().Add(r.lockTtl).Unix()
 }

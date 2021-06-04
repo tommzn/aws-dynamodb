@@ -8,6 +8,7 @@ import (
 	testutils "github.com/tommzn/aws-dynamodb/testing"
 	config "github.com/tommzn/go-config"
 	log "github.com/tommzn/go-log"
+	utils "github.com/tommzn/go-utils"
 )
 
 type RepositoryTestSuite struct {
@@ -64,6 +65,58 @@ func (suite *RepositoryTestSuite) TestCrudActions() {
 	item.ItemIdentifier.Id = "xxx"
 	err := suite.repo.Get(item)
 	suite.NotNil(err)
+}
+
+func (suite *RepositoryTestSuite) TestObjectLock() {
+
+	item := newItemForTest()
+	itemLock, err := suite.repo.Lock(item)
+	suite.Nil(err)
+	suite.NotNil(itemLock)
+
+	suite.NotNil(suite.repo.Add(itemLock))
+
+	expiresAt := itemLock.ExpiresAt
+	time.Sleep(1 * time.Second)
+	_, err1 := suite.repo.Renew(itemLock)
+	suite.Nil(err1)
+	suite.True(itemLock.ExpiresAt > expiresAt)
+
+	itemLock.LockId = utils.NewId()
+	_, err1_1 := suite.repo.Renew(itemLock)
+	suite.NotNil(err1_1)
+
+	itemLock2, err2 := suite.repo.Lock(item)
+	suite.NotNil(err2)
+	suite.Nil(itemLock2)
+
+	suite.Nil(suite.repo.Unlock(itemLock))
+
+	_, err3 := suite.repo.Renew(itemLock)
+	suite.NotNil(err3)
+
+	itemLock4, err4 := suite.repo.Lock(item)
+	suite.Nil(err4)
+	suite.NotNil(itemLock4)
+
+}
+
+func (suite *RepositoryTestSuite) TestLockAfterExpiration() {
+
+	suite.repo.(*DynamoDbRepository).lockTtl = 1 * time.Second
+
+	item := newItemForTest()
+	itemLock, err := suite.repo.Lock(item)
+	suite.Nil(err)
+	suite.NotNil(itemLock)
+
+	_, err1 := suite.repo.Lock(item)
+	suite.NotNil(err1)
+
+	time.Sleep(2 * time.Second)
+	itemLock2, err2 := suite.repo.Lock(item)
+	suite.Nil(err2)
+	suite.NotNil(itemLock2)
 }
 
 func (suite *RepositoryTestSuite) TestWithErrors() {
